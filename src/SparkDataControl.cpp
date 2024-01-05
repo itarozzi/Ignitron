@@ -222,6 +222,9 @@ void SparkDataControl::bleNotificationCallback(
 	//Triggered when data is received from Spark Amp in APP mode
 	// Transform data into ByteVetor and process
 	ByteVector chunk(&pData[0], &pData[length]);
+
+	DEBUG_PRINTLN("CALL   3");
+	
 	processSparkData(chunk);
 
 }
@@ -319,6 +322,8 @@ int SparkDataControl::processSparkData(ByteVector blk) {
 		activePreset_ = pendingPreset_;
 		pendingPreset_ = activePreset_;
 	}
+
+	DEBUG_PRINTLN("processSparkData finished");
 	return retCode;
 }
 

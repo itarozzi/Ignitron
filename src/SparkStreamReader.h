@@ -32,6 +32,7 @@ using ByteVector = std::vector<byte>;
 #define MSG_REQ_CURR_PRESET_NUM = 14
 #define MSG_REQ_CURR_PRESET = 15
 
+#define MSG_PROCESS_RES_INCORRECT 0
 #define MSG_PROCESS_RES_COMPLETE 1
 #define MSG_PROCESS_RES_INCOMPLETE 2
 #define MSG_PROCESS_RES_REQUEST 3
