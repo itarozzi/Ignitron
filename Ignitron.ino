@@ -88,15 +88,31 @@ void loop() {
 		//After connection is established, continue.
 		// On first boot, set the preset to number 1.
 		if (isInitBoot == true) {
-			DEBUG_PRINTLN("Initial boot, setting preset to 1");
+			DEBUG_PRINTLN("Initial boot, setting to bank 1");
 			spark_dc.setBank(1);
+//			delay(5000);
+			DEBUG_PRINTLN("Initial boot, setting preset to 1");
 			spark_dc.switchPreset(1, true);
+
+			 delay(2000);
+
+     
+
+      
+			DEBUG_PRINTLN("Check if active preset is empty...");
 			if (!(spark_dc.activePreset()->isEmpty)) {
+
+				// delay(5000);
+
+				DEBUG_PRINTLN("NOT EMPTY -> isInitBoot = false");
+
 				isInitBoot = false;
 			} else
 			{
+				DEBUG_PRINTLN("DELAY 2000");
 				delay(2000);
 			}
+      
 		}
 	}
 
@@ -105,11 +121,15 @@ void loop() {
 	if (operationMode != SPARK_MODE_KEYBOARD){
 		spark_dc.checkForUpdates();
 	}
+
+
 	// Reading button input
 	spark_bh.readButtons();
+	
 	// Update LED status
 	spark_led.updateLEDs();
+
 	// Update display (not required in Keyboard mode)
-	spark_display.update();
+	//spark_display.update();
 
 }

@@ -690,8 +690,18 @@ int SparkStreamReader::processBlock(ByteVector blk){
 	response.push_back(blk);
 
 	if ( (blk.size() < 22) || (blk[0] != 0x01 || blk[1] != 0xFE)){
-		DEBUG_PRINTLN("Incorrect block format or block too short, ignoring.");
-		return retValue;
+
+		if ( (blk.size() == 7) && (blk[0] == 0x0f0) && (blk[1] == 0x01) && (blk[4] == 0x05)){
+			// ACK message for MINI??-> F00101000501F7
+			DEBUG_PRINTLN("  -----> MINI ACK ???");
+			return MSG_PROCESS_RES_COMPLETE;
+		} 
+		else {
+	
+			DEBUG_PRINTLN("Incorrect block format or block too short, ignoring.");
+			DEBUG_PRINTLN(blk.size());
+			return retValue;
+			}
 	}
 
 	int blk_len = blk[6];

@@ -63,7 +63,7 @@ int SparkDataControl::init(int opModeInput) {
 	std::stringstream btModeStream;
 
 	while (std::getline(sparkModeStream, line)) {
-		sparkModeInput = stoi(line);
+		sparkModeInput = (int)(line[0]-'0'); // was: stoi(line);
 	}
 	if (sparkModeInput != 0) {
 		operationMode_ = sparkModeInput;
@@ -93,7 +93,7 @@ int SparkDataControl::init(int opModeInput) {
 		btModeStream.str(currentBTModeFile);
 
 		while (std::getline(btModeStream, line)) {
-			currentBTMode_ = stoi(line);
+			currentBTMode_ = (int)(line[0]-'0'); // was: stoi(line);
 		}
 
 		if (currentBTMode_ == BT_MODE_BLE) {
@@ -101,6 +101,7 @@ int SparkDataControl::init(int opModeInput) {
 		} else if (currentBTMode_ == BT_MODE_SERIAL) {
 			bleControl->startBTSerial();
 		}
+		DEBUG_PRINTLN("Assign activePreset_ [1]");
 		activePreset_ = presetBuilder.getPreset(activePresetNum_, activeBank_);
 		pendingPreset_ = presetBuilder.getPreset(activePresetNum_,
 				pendingBank_);
@@ -147,6 +148,7 @@ void SparkDataControl::checkForUpdates() {
 	// If so, update the preset variables
 	if (spark_ssr.isPresetUpdated() && (operationMode_ == SPARK_MODE_APP || operationMode_ == SPARK_MODE_LOOPER)){
 			pendingPreset_  = spark_ssr.currentSetting();
+			DEBUG_PRINTLN("Assign activePreset_ [2]");
 			activePreset_ = pendingPreset_;
 			spark_ssr.resetPresetUpdateFlag();
 	}
@@ -240,6 +242,8 @@ int SparkDataControl::processSparkData(ByteVector blk) {
 	// Check if ack needed. In positive case the sequence number and command
 	// are also returned to send back to requester
 	std::tie(ackNeeded, seq, sub_cmd) = spark_ssr.needsAck(blk);
+
+
 	if (ackNeeded) {
 		if (operationMode_ == SPARK_MODE_AMP) {
 			ack_msg = spark_msg.send_ack(seq, sub_cmd, DIR_FROM_SPARK);
@@ -295,8 +299,15 @@ int SparkDataControl::processSparkData(ByteVector blk) {
 		bleControl->notifyClients(msg);
 
 	}
+	
+	
+	
 	if (retCode == MSG_PROCESS_RES_COMPLETE) {
+		Serial.println("        Message processed -  MSG_PROCESS_RES_COMPLETE !");
 		std::string msgStr = spark_ssr.getJson();
+		Serial.println("        Message processed -  msgStr:");
+		Serial.println(msgStr.c_str());
+
 		if (msgStr.length() > 0) {
 			Serial.println("Message processed:");
 			Serial.println(msgStr.c_str());
@@ -317,8 +328,12 @@ int SparkDataControl::processSparkData(ByteVector blk) {
 	// if last Ack was for preset change (0x38) or effect switch (0x15),
 	// confirm pending preset into active
 	byte lastAck = spark_ssr.getLastAckAndEmpty();
+
+	Serial.printf(" LAST ACK is %d\n", lastAck);
+
 	if (((lastAck == 0x38 || lastAck == 0x01) && activeBank_ != 0) || lastAck == 0x15) {
 		Serial.println("OK!");
+		DEBUG_PRINTLN("Assign activePreset_ [3]");
 		activePreset_ = pendingPreset_;
 		pendingPreset_ = activePreset_;
 	}
@@ -360,10 +375,12 @@ bool SparkDataControl::switchPreset(int pre, bool isInitial) {
 			if (bnk == 0) { // for bank 0 switch hardware presets
 				current_msg = spark_msg.change_hardware_preset(pre);
 				Serial.printf("Changing to HW preset %d\n", pre);
-				if (bleControl->writeBLE(current_msg)
-						 && getCurrentPresetFromSpark()) {
+
+				if (bleControl->writeBLE(current_msg)) {
 					// For HW presets we always need to get the preset from Spark
 					// as we don't know the parameters
+					delay(250);
+					getCurrentPresetFromSpark();
 					retValue = true;
 				}
 			} else {
@@ -420,6 +437,8 @@ void SparkDataControl::processPresetEdit(int presetNum) {
 	} else {
 		resetPresetEdit(true, true);
 		activePresetNum_ = presetNum;
+
+		DEBUG_PRINTLN("Assign activePreset_ [4]");
 		activePreset_ = presetBuilder.getPreset(activeBank_, activePresetNum_);
 		pendingPreset_ = activePreset_;
 
@@ -439,6 +458,7 @@ void SparkDataControl::processStorePresetRequest(int presetNum) {
 				resetPresetEdit(true, true);
 				appReceivedPreset_ = { };
 				activePresetNum_ = presetNum;
+				DEBUG_PRINTLN("Assign activePreset_ [5]");
 				activePreset_ = presetBuilder.getPreset(activeBank_,
 						activePresetNum_);
 				pendingPreset_ = activePreset_;
@@ -453,6 +473,7 @@ void SparkDataControl::processStorePresetRequest(int presetNum) {
 			}
 		} else {
 			activePresetNum_ = presetNum;
+			DEBUG_PRINTLN("Assign activePreset_ [6]");
 			activePreset_ = presetBuilder.getPreset(activeBank_,
 					activePresetNum_);
 			pendingPreset_ = activePreset_;
@@ -492,6 +513,7 @@ void SparkDataControl::processDeletePresetRequest() {
 					activePresetNum_);
 			presetNumToEdit_ = 0;
 			presetBankToEdit_ = 0;
+			DEBUG_PRINTLN("Assign activePreset_ [7]");
 			activePreset_ = presetBuilder.getPreset(pendingBank_,
 					activePresetNum_);
 			pendingPreset_ = activePreset_;
@@ -519,6 +541,7 @@ void SparkDataControl::setPresetDeletionFlag() {
 }
 
 void SparkDataControl::updateActiveWithPendingPreset() {
+	DEBUG_PRINTLN("Assign activePreset_ [8]");
 	activePreset_ = pendingPreset_;
 }
 

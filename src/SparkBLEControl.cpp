@@ -359,6 +359,8 @@ void SparkBLEControl::onWrite(NimBLECharacteristic *pCharacteristic) {
 			byteVector.push_back((byte) (rxValue[i]));
 		}
 	}
+
+	DEBUG_PRINTLN("CALL   1");
 	spark_dc->processSparkData(byteVector);
 
 }
