@@ -335,7 +335,8 @@ int SparkDataControl::processSparkData(ByteVector blk) {
 		Serial.println("OK!");
 		DEBUG_PRINTLN("Assign activePreset_ [3]");
 		activePreset_ = pendingPreset_;
-		pendingPreset_ = activePreset_;
+		// Should not be needed, as both are already set to the same value above
+		//pendingPreset_ = activePreset_;
 	}
 
 	DEBUG_PRINTLN("processSparkData finished");

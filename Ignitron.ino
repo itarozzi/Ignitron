@@ -93,13 +93,8 @@ void loop() {
 //			delay(5000);
 			DEBUG_PRINTLN("Initial boot, setting preset to 1");
 			spark_dc.switchPreset(1, true);
-
-			 delay(2000);
-
-     
-
-      
-			DEBUG_PRINTLN("Check if active preset is empty...");
+			//Wait for preset change and acknowledgment to arrive
+			delay (2000);
 			if (!(spark_dc.activePreset()->isEmpty)) {
 
 				// delay(5000);
@@ -107,12 +102,7 @@ void loop() {
 				DEBUG_PRINTLN("NOT EMPTY -> isInitBoot = false");
 
 				isInitBoot = false;
-			} else
-			{
-				DEBUG_PRINTLN("DELAY 2000");
-				delay(2000);
 			}
-      
 		}
 	}
 
